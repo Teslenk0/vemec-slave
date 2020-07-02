@@ -99,6 +99,16 @@ public class Mappers {
         if (payload.get("unidadHumedad") != null) {
             r.setUnidadHumedad((String) payload.get("unidadHumedad"));
         }
+
+        if (payload.get("bateria") != null){
+            r.setBateria((Boolean) payload.get("bateria"));
+            r.setNivelBateria((Integer) payload.get("nivelBateria"));
+        }
+
+        if (payload.get("ppm") != null){
+            r.setPpm((Integer) payload.get("ppm"));
+        }
+
         return r;
     }
 }

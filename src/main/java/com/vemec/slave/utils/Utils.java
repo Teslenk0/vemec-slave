@@ -1,12 +1,14 @@
 package com.vemec.slave.utils;
 
+import com.vemec.slave.models.reporte.Reporte;
+import okhttp3.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Date;
+import java.io.IOException;
+import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -44,5 +46,65 @@ public class Utils {
             throw e;
         }
     }
+
+    public static Map<String, Object> evaluarUrgencia (Integer ppm, Integer nivelBateria ){
+        Map<String, Object> data = new HashMap<>();
+        if(nivelBateria != null){
+            if((ppm >= 90 || ppm <= 30) && nivelBateria <= 20){
+                data.put("tiempo", 1);
+                data.put("mensaje", "pulsaciones-bateria");
+                return data;
+            }
+            else if(nivelBateria <= 20){
+                data.put("tiempo", 1);
+                data.put("mensaje", "bateria");
+                return data;
+            }
+        }
+        if(ppm >= 90 || ppm <= 30){
+            data.put("tiempo", 1);
+            data.put("mensaje", "pulsaciones");
+            return data;
+        }
+        data.put("tiempo", 10);
+        data.put("mensaje", "estable");
+        return data;
+    }
+
+    public static Boolean checkTimer (Date cronometro, Integer timer, Reporte reporte){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(cronometro);
+
+        Calendar rep = Calendar.getInstance();
+        rep.setTime(reporte.getTime());
+
+        cal.add(Calendar.SECOND, timer);
+
+        if(rep.after(cal)){
+            return true;
+        }
+        return false;
+    }
+
+
+    public static void sendMaster(String json){
+        try{
+            System.out.println(json);
+            String url = "http://localhost:8080/api/v1/reporte";
+            MediaType JSON = MediaType.get("application/json; charset=utf-8");
+            OkHttpClient client = new OkHttpClient();
+
+            RequestBody body = RequestBody.create(json, JSON);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
 
 }

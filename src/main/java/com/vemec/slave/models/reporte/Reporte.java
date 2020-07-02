@@ -1,12 +1,16 @@
 package com.vemec.slave.models.reporte;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.annotations.IndexColumn;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity
 @Component
+@Table(indexes = { @Index(columnList = "cedula" ), @Index(columnList = "time") })
 public class Reporte {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +36,9 @@ public class Reporte {
     private String unidadHumedad;
     private String unidadFrecuencia;
     private String unidadVolumen;
+    private Integer ppm;
+    private Boolean bateria;
+    private Integer nivelBateria;
 
     public Reporte() {
 
@@ -181,6 +188,30 @@ public class Reporte {
         this.unidadVolumen = unidadVolumen;
     }
 
+    public Integer getPpm() {
+        return ppm;
+    }
+
+    public void setPpm(Integer ppm) {
+        this.ppm = ppm;
+    }
+
+    public Boolean getBateria() {
+        return bateria;
+    }
+
+    public void setBateria(Boolean bateria) {
+        this.bateria = bateria;
+    }
+
+    public Integer getNivelBateria() {
+        return nivelBateria;
+    }
+
+    public void setNivelBateria(Integer nivelBateria) {
+        this.nivelBateria = nivelBateria;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -203,11 +234,61 @@ public class Reporte {
                 Objects.equals(unidadTemp, reporte.unidadTemp) &&
                 Objects.equals(unidadHumedad, reporte.unidadHumedad) &&
                 Objects.equals(unidadFrecuencia, reporte.unidadFrecuencia) &&
-                Objects.equals(unidadVolumen, reporte.unidadVolumen);
+                Objects.equals(unidadVolumen, reporte.unidadVolumen) &&
+                Objects.equals(ppm, reporte.ppm) &&
+                Objects.equals(bateria, reporte.bateria) &&
+                Objects.equals(nivelBateria, reporte.nivelBateria);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, presionMaxima, presionMinima, volGas, frecGas, mezcla, humedadAire, tempEntrada, tempSalida, presionEntrada, presionSalida, time, cedula, unidadPresion, unidadTemp, unidadHumedad, unidadFrecuencia, unidadVolumen);
+        return Objects.hash(id, presionMaxima, presionMinima, volGas, frecGas, mezcla, humedadAire, tempEntrada, tempSalida, presionEntrada, presionSalida, time, cedula, unidadPresion, unidadTemp, unidadHumedad, unidadFrecuencia, unidadVolumen, ppm, bateria, nivelBateria);
     }
+
+    @Override
+    public String toString() {
+        return "Reporte{" +
+                "id=" + id +
+                ", presionMaxima=" + presionMaxima +
+                ", presionMinima=" + presionMinima +
+                ", volGas=" + volGas +
+                ", frecGas=" + frecGas +
+                ", mezcla=" + mezcla +
+                ", humedadAire=" + humedadAire +
+                ", tempEntrada=" + tempEntrada +
+                ", tempSalida=" + tempSalida +
+                ", presionEntrada=" + presionEntrada +
+                ", presionSalida=" + presionSalida +
+                ", time=" + time +
+                ", cedula='" + cedula + '\'' +
+                ", unidadPresion='" + unidadPresion + '\'' +
+                ", unidadTemp='" + unidadTemp + '\'' +
+                ", unidadHumedad='" + unidadHumedad + '\'' +
+                ", unidadFrecuencia='" + unidadFrecuencia + '\'' +
+                ", unidadVolumen='" + unidadVolumen + '\'' +
+                ", ppm=" + ppm +
+                ", bateria=" + bateria +
+                ", nivelBateria=" + nivelBateria +
+                '}';
+    }
+
+    public String toJson() {
+        ObjectMapper Obj = new ObjectMapper();
+
+        try {
+
+            // get Oraganisation object as a json string
+            String jsonStr = Obj.writeValueAsString(this);
+
+            // Displaying JSON String
+            System.out.println(jsonStr);
+            return jsonStr;
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
