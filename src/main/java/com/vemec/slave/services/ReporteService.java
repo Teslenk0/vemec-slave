@@ -1,12 +1,15 @@
 package com.vemec.slave.services;
 
 
+import com.vemec.slave.constant.Alerta;
 import com.vemec.slave.controllers.WebSocketController;
 import com.vemec.slave.models.reporte.Reporte;
 import com.vemec.slave.models.reporte.ReporteRepository;
 import com.vemec.slave.models.reporte.ReporteConfig;
 import com.vemec.slave.models.reporte.ReporteConfigRepository;
 import com.vemec.slave.utils.Mappers;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.vemec.slave.utils.Utils;
@@ -27,6 +30,21 @@ public class ReporteService {
 
             ReporteConfig rc = reporteConfigRepository.findByCedula(r.getCedula());
             Map<String, Object> data = Utils.evaluarUrgencia(r.getPpm(), r.getNivelBateria());
+
+            switch (data.get("mensaje").toString()){
+                case "pulsaciones":
+                    r.setAlerta(Alerta.PULSACIONES);
+                    break;
+                case "bateria":
+                    r.setAlerta(Alerta.BATERIA);
+                    break;
+                case "pulsaciones-bateria":
+                    r.setAlerta(Alerta.PULSACIONES_BATERIA);
+                    break;
+                case "estable":
+                    r.setAlerta(Alerta.ESTABLE);
+                    break;
+            }
 
             if(rc == null){
                 rc = new ReporteConfig();
@@ -58,13 +76,10 @@ public class ReporteService {
 
         new Thread(() -> {
             //Do whatever
-            System.out.println("------------------");
-            System.out.println(mensaje);
-            System.out.println(repConfig.getTimer());
-            System.out.println("------------------");
             repConfig.setCronometro(rep.getTime());
             reporteConfigRepository.save(repConfig);
             if(repConfig.getTimer() != 1){
+                System.out.println("NO URGENTE");
                 Double promPE = reporteRepository.promPresionEntrada(repConfig.getCedula(), rep.getTime());
                 Double promPS = reporteRepository.promPresionSalida(repConfig.getCedula(), rep.getTime());
                 Double promPMax = reporteRepository.promPresionMaxima(repConfig.getCedula(), rep.getTime());
@@ -76,32 +91,43 @@ public class ReporteService {
                 Double promTE = reporteRepository.promTempEntrada(repConfig.getCedula(), rep.getTime());
                 Double promTS = reporteRepository.promTempSalida(repConfig.getCedula(), rep.getTime());
 
-                Map<String, Object> reporteNuevo = new HashMap<>();
-                reporteNuevo.put("presionEntrada", promPE);
-                reporteNuevo.put("presionSalida", promPS);
-                reporteNuevo.put("presionMaxima", promPMax);
-                reporteNuevo.put("presionMinima", promPMin);
-                reporteNuevo.put("frecGas", promFG);
-                reporteNuevo.put("humedadAire", promHA);
-                reporteNuevo.put("volumenGas", promVG);
-                reporteNuevo.put("mezcla", promM);
-                reporteNuevo.put("tempEntrada", promTE);
-                reporteNuevo.put("tempSalida", promTS);
-                reporteNuevo.put("unidadVolumen",rep.getUnidadVolumen() );
-                reporteNuevo.put("unidadFrecuencia", rep.getUnidadFrecuencia());
-                reporteNuevo.put("unidadPresion", rep.getUnidadPresion());
-                reporteNuevo.put("unidadHumedad", rep.getUnidadHumedad());
-                reporteNuevo.put("unidadTemp", rep.getUnidadTemp());
-                reporteNuevo.put("cedula", repConfig.getCedula());
-                Map<String, Object> body = new HashMap<>();
-                body.put("reporte", reporteNuevo);
-                body.put("estado", mensaje);
-                Utils.sendMaster(body.toString());
+                // create your json here
+                JSONObject reporteNuevo = new JSONObject();
+                try {
+                    reporteNuevo.put("presionEntrada", promPE);
+                    reporteNuevo.put("presionSalida", promPS);
+                    reporteNuevo.put("presionMaxima", promPMax);
+                    reporteNuevo.put("presionMinima", promPMin);
+                    reporteNuevo.put("frecGas", promFG);
+                    reporteNuevo.put("humedadAire", promHA);
+                    reporteNuevo.put("volumenGas", promVG);
+                    reporteNuevo.put("mezcla", promM);
+                    reporteNuevo.put("tempEntrada", promTE);
+                    reporteNuevo.put("tempSalida", promTS);
+                    reporteNuevo.put("unidadVolumen",rep.getUnidadVolumen() );
+                    reporteNuevo.put("unidadFrecuencia", rep.getUnidadFrecuencia());
+                    reporteNuevo.put("unidadPresion", rep.getUnidadPresion());
+                    reporteNuevo.put("unidadHumedad", rep.getUnidadHumedad());
+                    reporteNuevo.put("unidadTemp", rep.getUnidadTemp());
+                    reporteNuevo.put("time", rep.getTime());
+                    reporteNuevo.put("alerta", rep.getAlerta());
+
+
+                    JSONObject body = new JSONObject();
+                    body.put("reporte", reporteNuevo.toString());
+                    body.put("cedula", repConfig.getCedula());
+                    Utils.sendMaster(body.toString());
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
             }
             else{
-                Map<String, Object> body = new HashMap<>();
+                System.out.println("URGENTEEEEEEE");
+                JSONObject body = new JSONObject();
                 body.put("reporte", rep.toJson());
-                body.put("estado", mensaje);
+                body.put("cedula", repConfig.getCedula());
                 Utils.sendMaster(body.toString());
             }
 

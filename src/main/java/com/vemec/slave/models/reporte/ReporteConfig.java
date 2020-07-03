@@ -15,7 +15,7 @@ public class ReporteConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String cedula;
+    private Integer cedula;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date cronometro;
@@ -33,11 +33,11 @@ public class ReporteConfig {
         this.id = id;
     }
 
-    public String getCedula() {
+    public Integer getCedula() {
         return cedula;
     }
 
-    public void setCedula(String cedula) {
+    public void setCedula(Integer cedula) {
         this.cedula = cedula;
     }
 

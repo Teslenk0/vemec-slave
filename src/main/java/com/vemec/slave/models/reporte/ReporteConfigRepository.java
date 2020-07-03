@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReporteConfigRepository extends CrudRepository<ReporteConfig, Long> {
 
-    ReporteConfig findByCedula(String cedula);
+    ReporteConfig findByCedula(Integer cedula);
 }

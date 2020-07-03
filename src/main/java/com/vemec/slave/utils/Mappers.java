@@ -77,7 +77,7 @@ public class Mappers {
         }
 
         if (payload.get("cedula") != null) {
-            r.setCedula((String) payload.get("cedula"));
+            r.setCedula((Integer) payload.get("cedula"));
         }
 
         if (payload.get("unidadPresion") != null) {

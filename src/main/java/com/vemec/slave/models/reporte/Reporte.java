@@ -1,5 +1,6 @@
 package com.vemec.slave.models.reporte;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vemec.slave.constant.Alerta;
 import org.hibernate.annotations.IndexColumn;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,8 @@ public class Reporte {
     @Temporal(TemporalType.TIMESTAMP)
     private Date time;
 
-    private String cedula;
+    private Integer cedula;
+    private Alerta alerta;
 
     private String unidadPresion;
     private String unidadTemp;
@@ -140,12 +142,20 @@ public class Reporte {
         this.time = time;
     }
 
-    public String getCedula() {
+    public Integer getCedula() {
         return cedula;
     }
 
-    public void setCedula(String cedula) {
+    public void setCedula(Integer cedula) {
         this.cedula = cedula;
+    }
+
+    public Alerta getAlerta() {
+        return alerta;
+    }
+
+    public void setAlerta(Alerta alerta) {
+        this.alerta = alerta;
     }
 
     public String getUnidadPresion() {
@@ -230,6 +240,7 @@ public class Reporte {
                 Objects.equals(id, reporte.id) &&
                 Objects.equals(time, reporte.time) &&
                 Objects.equals(cedula, reporte.cedula) &&
+                alerta == reporte.alerta &&
                 Objects.equals(unidadPresion, reporte.unidadPresion) &&
                 Objects.equals(unidadTemp, reporte.unidadTemp) &&
                 Objects.equals(unidadHumedad, reporte.unidadHumedad) &&
@@ -242,7 +253,7 @@ public class Reporte {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, presionMaxima, presionMinima, volGas, frecGas, mezcla, humedadAire, tempEntrada, tempSalida, presionEntrada, presionSalida, time, cedula, unidadPresion, unidadTemp, unidadHumedad, unidadFrecuencia, unidadVolumen, ppm, bateria, nivelBateria);
+        return Objects.hash(id, presionMaxima, presionMinima, volGas, frecGas, mezcla, humedadAire, tempEntrada, tempSalida, presionEntrada, presionSalida, time, cedula, alerta, unidadPresion, unidadTemp, unidadHumedad, unidadFrecuencia, unidadVolumen, ppm, bateria, nivelBateria);
     }
 
     @Override
@@ -260,7 +271,8 @@ public class Reporte {
                 ", presionEntrada=" + presionEntrada +
                 ", presionSalida=" + presionSalida +
                 ", time=" + time +
-                ", cedula='" + cedula + '\'' +
+                ", cedula=" + cedula +
+                ", alerta=" + alerta +
                 ", unidadPresion='" + unidadPresion + '\'' +
                 ", unidadTemp='" + unidadTemp + '\'' +
                 ", unidadHumedad='" + unidadHumedad + '\'' +
@@ -281,7 +293,7 @@ public class Reporte {
             String jsonStr = Obj.writeValueAsString(this);
 
             // Displaying JSON String
-            System.out.println(jsonStr);
+            //System.out.println(jsonStr);
             return jsonStr;
         }
 

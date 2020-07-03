@@ -89,7 +89,6 @@ public class Utils {
 
     public static void sendMaster(String json){
         try{
-            System.out.println(json);
             String url = "http://localhost:8080/api/v1/reporte";
             MediaType JSON = MediaType.get("application/json; charset=utf-8");
             OkHttpClient client = new OkHttpClient();
