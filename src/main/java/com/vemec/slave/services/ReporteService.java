@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.vemec.slave.utils.Utils;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 @Service
@@ -23,6 +25,7 @@ public class ReporteService {
     @Autowired
     private ReporteConfigRepository reporteConfigRepository;
 
+    @Transactional
     public Reporte addNew(Map<String, Object> payload) throws Exception {
         try {
             Reporte r = new Reporte();
@@ -31,7 +34,7 @@ public class ReporteService {
             ReporteConfig rc = reporteConfigRepository.findByCedula(r.getCedula());
             Map<String, Object> data = Utils.evaluarUrgencia(r.getPpm(), r.getNivelBateria());
 
-            switch (data.get("mensaje").toString()){
+            switch (data.get("mensaje").toString()) {
                 case "pulsaciones":
                     r.setAlerta(Alerta.PULSACIONES);
                     break;
@@ -46,23 +49,23 @@ public class ReporteService {
                     break;
             }
 
-            if(rc == null){
+            if (rc == null) {
                 rc = new ReporteConfig();
                 rc.setCedula(r.getCedula());
                 rc.setCronometro(r.getTime());
                 rc.setTimer((Integer) data.get("tiempo"));
                 reporteConfigRepository.save(rc);
             }
-            if(rc.getTimer() != ((Integer) data.get("tiempo"))){
+            if (rc.getTimer() != ((Integer) data.get("tiempo"))) {
                 rc.setTimer((Integer) data.get("tiempo"));
                 reporteConfigRepository.save(rc);
             }
             reporteRepository.save(r);
-            if(data.get("mensaje") == "bateria" || data.get("mensaje") == "pulsaciones"){
-                sendMaster(r, rc, (String)data.get("mensaje"));
-            }
-            else if(Utils.checkTimer(rc.getCronometro(), rc.getTimer(), r)) {
-                sendMaster(r, rc, (String)data.get("mensaje"));
+
+            if (data.get("mensaje") == "bateria" || data.get("mensaje") == "pulsaciones") {
+                sendMaster(r, rc, (String) data.get("mensaje"));
+            } else if (Utils.checkTimer(rc.getCronometro(), rc.getTimer(), r)) {
+                sendMaster(r, rc, (String) data.get("mensaje"));
             }
             // send data to local monitor
             WebSocketController.sendWebSocketUpdate(r);
@@ -72,13 +75,14 @@ public class ReporteService {
         }
     }
 
-    private void sendMaster(Reporte rep, ReporteConfig repConfig, String mensaje){
+    @Transactional
+    public void sendMaster(Reporte rep, ReporteConfig repConfig, String mensaje) {
 
         new Thread(() -> {
             //Do whatever
             repConfig.setCronometro(rep.getTime());
             reporteConfigRepository.save(repConfig);
-            if(repConfig.getTimer() != 1){
+            if (repConfig.getTimer() != 1) {
                 System.out.println("NO URGENTE");
                 Double promPE = reporteRepository.promPresionEntrada(repConfig.getCedula(), rep.getTime());
                 Double promPS = reporteRepository.promPresionSalida(repConfig.getCedula(), rep.getTime());
@@ -104,7 +108,7 @@ public class ReporteService {
                     reporteNuevo.put("mezcla", promM);
                     reporteNuevo.put("tempEntrada", promTE);
                     reporteNuevo.put("tempSalida", promTS);
-                    reporteNuevo.put("unidadVolumen",rep.getUnidadVolumen() );
+                    reporteNuevo.put("unidadVolumen", rep.getUnidadVolumen());
                     reporteNuevo.put("unidadFrecuencia", rep.getUnidadFrecuencia());
                     reporteNuevo.put("unidadPresion", rep.getUnidadPresion());
                     reporteNuevo.put("unidadHumedad", rep.getUnidadHumedad());
@@ -122,8 +126,7 @@ public class ReporteService {
                     e.printStackTrace();
                 }
 
-            }
-            else{
+            } else {
                 System.out.println("URGENTEEEEEEE");
                 JSONObject body = new JSONObject();
                 body.put("reporte", rep.toJson());
