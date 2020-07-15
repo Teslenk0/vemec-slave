@@ -291,9 +291,6 @@ public class Reporte {
 
             // get Oraganisation object as a json string
             String jsonStr = Obj.writeValueAsString(this);
-
-            // Displaying JSON String
-            //System.out.println(jsonStr);
             return jsonStr;
         }
 

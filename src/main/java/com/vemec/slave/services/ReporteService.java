@@ -83,7 +83,6 @@ public class ReporteService {
             repConfig.setCronometro(rep.getTime());
             reporteConfigRepository.save(repConfig);
             if (repConfig.getTimer() != 1) {
-                System.out.println("NO URGENTE");
                 Double promPE = reporteRepository.promPresionEntrada(repConfig.getCedula(), rep.getTime());
                 Double promPS = reporteRepository.promPresionSalida(repConfig.getCedula(), rep.getTime());
                 Double promPMax = reporteRepository.promPresionMaxima(repConfig.getCedula(), rep.getTime());
@@ -127,7 +126,6 @@ public class ReporteService {
                 }
 
             } else {
-                System.out.println("URGENTEEEEEEE");
                 JSONObject body = new JSONObject();
                 body.put("reporte", rep.toJson());
                 body.put("cedula", repConfig.getCedula());
